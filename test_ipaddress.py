@@ -7,7 +7,6 @@
 import unittest
 import re
 import contextlib
-import operator
 import ipaddress
 
 

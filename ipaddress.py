@@ -42,7 +42,7 @@ def ip_address(address):
     """
     try:
         return IPv4Address(address)
-    except (AddressValueError, NetmaskValueError),e:
+    except (AddressValueError, NetmaskValueError):
         pass
 
     try:
@@ -1050,7 +1050,7 @@ class _BaseV4:
             raise AddressValueError("Expected 4 octets in %r" % ip_str)
 
         try:
-            return int_from_packed(''.join(chr(self._parse_octet(e)) 
+            return int_from_packed(''.join(chr(self._parse_octet(e))
                                            for e in  octets), 'big')
         except ValueError as exc:
             raise AddressValueError("%s in %r" % (exc, ip_str))
@@ -1101,7 +1101,7 @@ class _BaseV4:
             The IP address as a string in dotted decimal notation.
 
         """
-        return u'.'.join([unicode(int(b.encode("hex"), 16)) 
+        return u'.'.join([unicode(int(b.encode("hex"), 16))
                           for b in int_to_packed(ip_int, 4, 'big')])
 
     def _is_valid_netmask(self, netmask):
@@ -1211,7 +1211,7 @@ class IPv4Address(_BaseV4, _BaseAddress):
             return address_equal
         if hasattr(other, "network"):
             return False
-        
+
         return True
 
     @property
@@ -1778,9 +1778,9 @@ class IPv6Address(_BaseV6, _BaseAddress):
             return address_equal
         if hasattr(other, "network"):
             return False
-        
+
         return True
-    
+
     @property
     def packed(self):
         """The binary representation of this address."""
@@ -2059,7 +2059,7 @@ class IPv6Network(_BaseV6, _BaseNetwork):
         # Constructing from a packed address
         if isinstance(address, basestring)\
         and (len(address) == 16)\
-        and (address.find("::") == -1):        
+        and (address.find("::") == -1):
             self.network_address = IPv6Address(address)
             self._prefixlen = self._max_prefixlen
             self.netmask = IPv6Address(self._ALL_ONES)
@@ -2140,9 +2140,9 @@ def isinstance(x, types):
 def int_to_packed(val, length=None, byteorder="big", signed=False):
     """
     int_to_packed(val, length=None, byteorder="big", signed=False) -> packed
-    
+
     Converts an integer to a packed binary string.
-    
+
     val: int() - Value to be converted
     length: int() - Length of the byte string to be returned
         Default is as much as value consumes.
@@ -2150,54 +2150,54 @@ def int_to_packed(val, length=None, byteorder="big", signed=False):
         Default is "big".
     signed: bool() - Whether to consider signed integers.
     """
-    
-    length = int(math.ceil(val.bit_length() / 8.0)) if length is None else length
-    fill_char = "0" 
 
-    
+    length = int(math.ceil(val.bit_length() / 8.0)) if length is None else length
+    fill_char = "0"
+
+
     if val < 0 and (signed is not True):
         raise OverflowError("can't convert negative int to unsigned")
-        
+
     if abs(val.bit_length()) > (length * 8):
         raise OverflowError("Value too big to convert with given length.")
 
     if signed is True and val < 0:
         fill_char = "F"
         val = 2**(8*length) - abs(val)
-    
+
     hex_str = hex(val).split("0x")[1].rstrip("L")
     packed = hex_str.rjust(length*2, fill_char).decode("hex")
-    
+
     if byteorder == "little":
         packed = packed[::-1]
-    
+
     return packed
 
 def int_from_packed(packed, byteorder="big", signed=False):
     """
     int_from_packed(packed, byteorder="big", signed=False) -> int
-    
+
     Converts a packed binary string to an integer value.
-    
+
     packed: str() - Packed binary string
     byteorder: str() - Either "little" (endian) or "big" (endian)
         Default is "big".
     signed: bool() - Whether to consider signed integers.
     """
-        
+
     length = len(packed)
-    
+
     if byteorder == "little":
         packed = packed[::-1]
     hex_string = packed.encode("hex")
-    
+
     res = int(hex_string, 16)
-    
+
     if signed:
         return -(2**(8*length) - res)
     else:
         return res
-    
+
 
 def packed_from_hex(val):
     try:
