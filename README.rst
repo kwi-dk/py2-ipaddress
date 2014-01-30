@@ -1,9 +1,9 @@
-`ipaddress` backport for Python 2.7
-===================================
+``ipaddress`` backport for Python 2.7
+=====================================
 
-This is a Python 2.7 backport of the Python 3.3 `ipaddress` module.
+This is a Python 2.7 backport of the Python 3.3 ``ipaddress`` module.
 
-Not all 3.3 functionality is supported, due to the lack of a distinct `bytes`
+Not all 3.3 functionality is supported, due to the lack of a distinct ``bytes``
 type in Python 2.7. Nevertheless, it is quite useful if you're stuck with
 Python 2.7.
 
@@ -16,8 +16,8 @@ __ http://docs.python.org/3.3/library/ipaddress
 License
 -------
 
-The `ipaddress` modules (both the original and this backport) are licensed
+The ``ipaddress`` modules (both the original and this backport) are licensed
 under the Apache 2.0 license.
 
 The modifications made for Python 2.7 compatibility are hereby released into
-the public domain by the author.
+the public domain by the authors.

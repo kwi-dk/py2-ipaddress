@@ -9,7 +9,7 @@ from setuptools import setup
 
 setup(
     name='py2-ipaddress',
-    version='1.0',
+    version='2.0',
     description="Python 2.7 backport of 3.3's ipaddress module",
     maintainer='Søren Løvborg',
     maintainer_email='kwi@kwi.dk',
