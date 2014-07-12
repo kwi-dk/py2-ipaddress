@@ -14,12 +14,12 @@ setup(
     maintainer='Søren Løvborg',
     maintainer_email='kwi@kwi.dk',
     url='https://bitbucket.org/kwi/py2-ipaddress/',
-    license='Apache Software License',
+    license='Python Software Foundation License version 2',
 
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: Apache Software License',
+        'License :: OSI Approved :: Python Software Foundation License',
         'Programming Language :: Python :: 2.7',
         'Topic :: Internet',
         'Topic :: System :: Networking',

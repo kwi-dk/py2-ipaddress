@@ -17,7 +17,9 @@ License
 -------
 
 The ``ipaddress`` modules (both the original and this backport) are licensed
-under the Apache 2.0 license.
+under the `Python Software Foundation License version 2`__.
 
 The modifications made for Python 2.7 compatibility are hereby released into
 the public domain by the authors.
+
+__ https://www.python.org/download/releases/3.3.0/license
