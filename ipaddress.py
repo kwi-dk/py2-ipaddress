@@ -195,7 +195,7 @@ def _count_righthand_zero_bits(number, bits):
     """
     if number == 0:
         return bits
-    for i in range(bits):
+    for i in xrange(bits):
         if (number >> i) & 1:
             return i
     # All bits of interest were zero, even if there are more in the number
@@ -584,13 +584,13 @@ class _BaseNetwork(_IPAddressBase):
         """
         network = int(self.network_address)
         broadcast = int(self.broadcast_address)
-        for x in range(network + 1, broadcast):
+        for x in xrange(network + 1, broadcast):
             yield self._address_class(x)
 
     def __iter__(self):
         network = int(self.network_address)
         broadcast = int(self.broadcast_address)
-        for x in range(network, broadcast + 1):
+        for x in xrange(network, broadcast + 1):
             yield self._address_class(x)
 
     def __getitem__(self, n):
@@ -1540,7 +1540,7 @@ class _BaseV6(object):
         # Disregarding the endpoints, find '::' with nothing in between.
         # This indicates that a run of zeroes has been skipped.
         skip_index = None
-        for i in range(1, len(parts) - 1):
+        for i in xrange(1, len(parts) - 1):
             if not parts[i]:
                 if skip_index is not None:
                     # Can't have more than one '::'
@@ -1588,11 +1588,11 @@ class _BaseV6(object):
         try:
             # Now, parse the hextets into a 128-bit integer.
             ip_int = 0
-            for i in range(parts_hi):
+            for i in xrange(parts_hi):
                 ip_int <<= 16
                 ip_int |= self._parse_hextet(parts[i])
             ip_int <<= 16 * parts_skipped
-            for i in range(-parts_lo, 0):
+            for i in xrange(-parts_lo, 0):
                 ip_int <<= 16
                 ip_int |= self._parse_hextet(parts[i])
             return ip_int
@@ -1691,7 +1691,7 @@ class _BaseV6(object):
             raise ValueError('IPv6 address is too large')
 
         hex_str = '%032x' % ip_int
-        hextets = ['%x' % int(hex_str[x:x+4], 16) for x in range(0, 32, 4)]
+        hextets = ['%x' % int(hex_str[x:x+4], 16) for x in xrange(0, 32, 4)]
 
         hextets = self._compress_hextets(hextets)
         return ':'.join(hextets)
@@ -1715,7 +1715,7 @@ class _BaseV6(object):
 
         ip_int = self._ip_int_from_string(ip_str)
         hex_str = '%032x' % ip_int
-        parts = [hex_str[x:x+4] for x in range(0, 32, 4)]
+        parts = [hex_str[x:x+4] for x in xrange(0, 32, 4)]
         if isinstance(self, (_BaseNetwork, IPv6Interface)):
             return '%s/%d' % (':'.join(parts), self._prefixlen)
         return ':'.join(parts)
