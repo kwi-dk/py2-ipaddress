@@ -1,3 +1,21 @@
+# Python 2.7 port of Python 3.4's test_ipaddress.
+
+# List of compatibility changes:
+
+# This backport uses bytearray instead of bytes, as bytes is the same
+# as str in Python 2.7.
+bytes = bytearray
+# s/\(b'[^']\+'\)/bytearray(\1)/g
+# plus manual fixes for implicit string concatenation.
+
+# Python 3.4 has assertRaisesRegex where Python 2.7 only has assertRaisesRegexp.
+# s/\.assertRaisesRegexp(/.assertRaisesRegexp(/
+
+# Further compatibility changes are marked "Compatibility", below.
+
+# ----------------------------------------------------------------------------
+
+
 # Copyright 2007 Google Inc.
 #  Licensed to PSF under a Contributor Agreement.
 
@@ -42,12 +60,14 @@ class BaseTestCase(unittest.TestCase):
         """
         if args:
             details = details % args
-        cm = self.assertRaisesRegex(exc_type, details)
+        cm = self.assertRaisesRegexp(exc_type, details)
         with cm as exc:
             yield exc
-        # Ensure we produce clean tracebacks on failure
-        if exc.exception.__context__ is not None:
-            self.assertTrue(exc.exception.__suppress_context__)
+
+        # Compatibility: Python 2.7 does not support exception chaining
+        ## Ensure we produce clean tracebacks on failure
+        #if exc.exception.__context__ is not None:
+        #    self.assertTrue(exc.exception.__suppress_context__)
 
     def assertAddressError(self, details, *args):
         """Ensure a clean AddressValueError"""
@@ -62,6 +82,7 @@ class BaseTestCase(unittest.TestCase):
     def assertInstancesEqual(self, lhs, rhs):
         """Check constructor arguments produce equivalent instances"""
         self.assertEqual(self.factory(lhs), self.factory(rhs))
+
 
 class CommonTestMixin:
 
@@ -659,21 +680,21 @@ class IpaddrUnitTest(unittest.TestCase):
         class Broken(ipaddress._BaseAddress):
             pass
         broken = Broken('127.0.0.1')
-        with self.assertRaisesRegex(NotImplementedError, "Broken.*version"):
+        with self.assertRaisesRegexp(NotImplementedError, "Broken.*version"):
             broken.version
 
     def testMissingNetworkVersion(self):
         class Broken(ipaddress._BaseNetwork):
             pass
         broken = Broken('127.0.0.1')
-        with self.assertRaisesRegex(NotImplementedError, "Broken.*version"):
+        with self.assertRaisesRegexp(NotImplementedError, "Broken.*version"):
             broken.version
 
     def testMissingAddressClass(self):
         class Broken(ipaddress._BaseNetwork):
             pass
         broken = Broken('127.0.0.1')
-        with self.assertRaisesRegex(NotImplementedError, "Broken.*address"):
+        with self.assertRaisesRegexp(NotImplementedError, "Broken.*address"):
             broken._address_class
 
     def testGetNetwork(self):
@@ -708,18 +729,18 @@ class IpaddrUnitTest(unittest.TestCase):
     def testIpFromPacked(self):
         address = ipaddress.ip_address
         self.assertEqual(self.ipv4_interface._ip,
-                         ipaddress.ip_interface(b'\x01\x02\x03\x04')._ip)
+                         ipaddress.ip_interface(bytearray(b'\x01\x02\x03\x04'))._ip)
         self.assertEqual(address('255.254.253.252'),
-                         address(b'\xff\xfe\xfd\xfc'))
+                         address(bytearray(b'\xff\xfe\xfd\xfc')))
         self.assertEqual(self.ipv6_interface.ip,
                          ipaddress.ip_interface(
-                    b'\x20\x01\x06\x58\x02\x2a\xca\xfe'
-                    b'\x02\x00\x00\x00\x00\x00\x00\x01').ip)
+                    bytearray(b'\x20\x01\x06\x58\x02\x2a\xca\xfe'
+                    b'\x02\x00\x00\x00\x00\x00\x00\x01')).ip)
         self.assertEqual(address('ffff:2:3:4:ffff::'),
-                         address(b'\xff\xff\x00\x02\x00\x03\x00\x04' +
-                            b'\xff\xff' + b'\x00' * 6))
+                         address(bytearray(b'\xff\xff\x00\x02\x00\x03\x00\x04') +
+                            bytearray(b'\xff\xff') + bytearray(b'\x00') * 6))
         self.assertEqual(address('::'),
-                         address(b'\x00' * 16))
+                         address(bytearray(b'\x00') * 16))
 
     def testGetIp(self):
         self.assertEqual(int(self.ipv4_interface.ip), 16909060)
@@ -1303,17 +1324,17 @@ class IpaddrUnitTest(unittest.TestCase):
 
     def testPacked(self):
         self.assertEqual(self.ipv4_address.packed,
-                         b'\x01\x02\x03\x04')
+                         bytearray(b'\x01\x02\x03\x04'))
         self.assertEqual(ipaddress.IPv4Interface('255.254.253.252').packed,
-                         b'\xff\xfe\xfd\xfc')
+                         bytearray(b'\xff\xfe\xfd\xfc'))
         self.assertEqual(self.ipv6_address.packed,
-                         b'\x20\x01\x06\x58\x02\x2a\xca\xfe'
-                         b'\x02\x00\x00\x00\x00\x00\x00\x01')
+                         bytearray(b'\x20\x01\x06\x58\x02\x2a\xca\xfe'
+                         b'\x02\x00\x00\x00\x00\x00\x00\x01'))
         self.assertEqual(ipaddress.IPv6Interface('ffff:2:3:4:ffff::').packed,
-                         b'\xff\xff\x00\x02\x00\x03\x00\x04\xff\xff'
-                            + b'\x00' * 6)
+                         bytearray(b'\xff\xff\x00\x02\x00\x03\x00\x04\xff\xff')
+                            + bytearray(b'\x00') * 6)
         self.assertEqual(ipaddress.IPv6Interface('::1:0:0:0:0').packed,
-                         b'\x00' * 6 + b'\x00\x01' + b'\x00' * 8)
+                         bytearray(b'\x00') * 6 + bytearray(b'\x00\x01') + bytearray(b'\x00') * 8)
 
     def testIpType(self):
         ipv4net = ipaddress.ip_network('1.2.3.4')

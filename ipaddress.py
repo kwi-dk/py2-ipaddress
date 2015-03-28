@@ -1,3 +1,51 @@
+# Python 2.7 port of Python 3.4's ipaddress module.
+
+# List of compatibility changes:
+
+# Python 3 uses only new-style classes.
+# s/class \(\w\+\):/class \1(object):/
+
+# Use iterator versions of map and range:
+from itertools import imap as map
+range = xrange
+
+# This backport uses bytearray instead of bytes, as bytes is the same
+# as str in Python 2.7.
+bytes = bytearray
+
+# Python 2 does not support exception chaining.
+# s/ from None$//
+
+# When checking for instances of int, also allow Python 2's long.
+_builtin_isinstance = isinstance
+
+def isinstance(val, types):
+    if types is int:
+        types = (int, long)
+    elif type(types) is tuple and int in types:
+        types += (long,)
+    return _builtin_isinstance(val, types)
+
+# functools.lru_cache is Python 3.2+ only.
+# /@functools.lru_cache()/d
+
+# int().to_bytes is Python 3.2+ only.
+# s/\(\w+\)\.to_bytes(/_int_to_bytes(\1, /
+def _int_to_bytes(self, length, byteorder, signed=False):
+    assert byteorder == 'big' and signed is False
+    if self < 0 or self >= 256**length:
+        raise OverflowError()
+    return bytearray(('%0*x' % (length * 2, self)).decode('hex'))
+
+# int.from_bytes is Python 3.2+ only.
+# s/int\.from_bytes(/_int_from_bytes(/g
+def _int_from_bytes(what, byteorder, signed=False):
+    assert byteorder == 'big' and signed is False
+    return int(str(bytearray(what)).encode('hex'), 16)
+
+# ----------------------------------------------------------------------------
+
+
 # Copyright 2007 Google Inc.
 #  Licensed to PSF under a Contributor Agreement.
 
@@ -134,7 +182,7 @@ def v4_int_to_packed(address):
 
     """
     try:
-        return address.to_bytes(4, 'big')
+        return _int_to_bytes(address, 4, 'big')
     except:
         raise ValueError("Address negative or too large for IPv4")
 
@@ -150,7 +198,7 @@ def v6_int_to_packed(address):
 
     """
     try:
-        return address.to_bytes(16, 'big')
+        return _int_to_bytes(address, 16, 'big')
     except:
         raise ValueError("Address negative or too large for IPv6")
 
@@ -388,7 +436,7 @@ def get_mixed_type_key(obj):
     return NotImplemented
 
 
-class _TotalOrderingMixin:
+class _TotalOrderingMixin(object):
     # Helper that derives the other comparison operations from
     # __lt__ and __eq__
     # We avoid functools.total_ordering because it doesn't handle
@@ -487,14 +535,14 @@ class _IPAddressBase(_TotalOrderingMixin):
         all_ones = (1 << prefixlen) - 1
         if leading_ones != all_ones:
             byteslen = self._max_prefixlen // 8
-            details = ip_int.to_bytes(byteslen, 'big')
+            details = _int_to_bytes(ip_int, byteslen, 'big')
             msg = 'Netmask pattern %r mixes zeroes & ones'
             raise ValueError(msg % details)
         return prefixlen
 
     def _report_invalid_netmask(self, netmask_str):
         msg = '%r is not a valid netmask' % netmask_str
-        raise NetmaskValueError(msg) from None
+        raise NetmaskValueError(msg)
 
     def _prefix_from_prefix_string(self, prefixlen_str):
         """Return prefix length from a numeric string
@@ -1073,7 +1121,7 @@ class _BaseNetwork(_IPAddressBase):
                 self.broadcast_address.is_loopback)
 
 
-class _BaseV4:
+class _BaseV4(object):
 
     """Base IPv4 object.
 
@@ -1117,9 +1165,9 @@ class _BaseV4:
             raise AddressValueError("Expected 4 octets in %r" % ip_str)
 
         try:
-            return int.from_bytes(map(self._parse_octet, octets), 'big')
+            return _int_from_bytes(map(self._parse_octet, octets), 'big')
         except ValueError as exc:
-            raise AddressValueError("%s in %r" % (exc, ip_str)) from None
+            raise AddressValueError("%s in %r" % (exc, ip_str))
 
     def _parse_octet(self, octet_str):
         """Convert a decimal octet into an integer.
@@ -1167,7 +1215,7 @@ class _BaseV4:
             The IP address as a string in dotted decimal notation.
 
         """
-        return '.'.join(map(str, ip_int.to_bytes(4, 'big')))
+        return '.'.join(map(str, _int_to_bytes(ip_int, 4, 'big')))
 
     def _is_valid_netmask(self, netmask):
         """Verify that the netmask is valid.
@@ -1262,7 +1310,7 @@ class IPv4Address(_BaseV4, _BaseAddress):
         # Constructing from a packed address
         if isinstance(address, bytes):
             self._check_packed_address(address, 4)
-            self._ip = int.from_bytes(address, 'big')
+            self._ip = _int_from_bytes(address, 'big')
             return
 
         # Assume input argument to be string or any object representation
@@ -1288,7 +1336,6 @@ class IPv4Address(_BaseV4, _BaseAddress):
         return self in reserved_network
 
     @property
-    @functools.lru_cache()
     def is_private(self):
         """Test if this address is allocated for private networks.
 
@@ -1528,7 +1575,6 @@ class IPv4Network(_BaseV4, _BaseNetwork):
             self.hosts = self.__iter__
 
     @property
-    @functools.lru_cache()
     def is_global(self):
         """Test if this address is allocated for public networks.
 
@@ -1543,7 +1589,7 @@ class IPv4Network(_BaseV4, _BaseNetwork):
 
 
 
-class _BaseV6:
+class _BaseV6(object):
 
     """Base IPv6 object.
 
@@ -1589,7 +1635,7 @@ class _BaseV6:
             try:
                 ipv4_int = IPv4Address(parts.pop())._ip
             except AddressValueError as exc:
-                raise AddressValueError("%s in %r" % (exc, ip_str)) from None
+                raise AddressValueError("%s in %r" % (exc, ip_str))
             parts.append('%x' % ((ipv4_int >> 16) & 0xFFFF))
             parts.append('%x' % (ipv4_int & 0xFFFF))
 
@@ -1661,7 +1707,7 @@ class _BaseV6:
                 ip_int |= self._parse_hextet(parts[i])
             return ip_int
         except ValueError as exc:
-            raise AddressValueError("%s in %r" % (exc, ip_str)) from None
+            raise AddressValueError("%s in %r" % (exc, ip_str))
 
     def _parse_hextet(self, hextet_str):
         """Convert an IPv6 hextet string into an integer.
@@ -1826,7 +1872,7 @@ class IPv6Address(_BaseV6, _BaseAddress):
         # Constructing from a packed address
         if isinstance(address, bytes):
             self._check_packed_address(address, 16)
-            self._ip = int.from_bytes(address, 'big')
+            self._ip = _int_from_bytes(address, 'big')
             return
 
         # Assume input argument to be string or any object representation
@@ -1898,7 +1944,6 @@ class IPv6Address(_BaseV6, _BaseAddress):
         return self in sitelocal_network
 
     @property
-    @functools.lru_cache()
     def is_private(self):
         """Test if this address is allocated for private networks.
 
