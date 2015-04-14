@@ -22,11 +22,15 @@ bytes = bytearray
 """Unittest for ipaddress module."""
 
 
-import unittest
 import re
 import contextlib
 import operator
 import ipaddress
+import sys
+if sys.version_info < (2, 7):
+    import unittest2 as unittest
+else:
+    import unittest
 
 class BaseTestCase(unittest.TestCase):
     # One big change in ipaddress over the original ipaddr module is
