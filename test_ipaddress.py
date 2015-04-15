@@ -11,7 +11,10 @@ bytes = bytearray
 # Python 3.4 has assertRaisesRegex where Python 2.7 only has assertRaisesRegexp.
 # s/\.assertRaisesRegexp(/.assertRaisesRegexp(/
 
+# Python 2.6 carries assertRaisesRegexp and others in unittest2
+
 # Python 2.6 wants unicode into bytes.fromhex
+# s/bytes.fromhex\("/bytes.fromhex(u"/g
 
 # Further compatibility changes are marked "Compatibility", below.
 
