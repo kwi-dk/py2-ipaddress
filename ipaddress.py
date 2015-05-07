@@ -43,6 +43,12 @@ def _int_from_bytes(what, byteorder, signed=False):
     assert byteorder == 'big' and signed is False
     return int(str(bytearray(what)).encode('hex'), 16)
 
+# Python 2.6 has no int.bit_length()
+if hasattr(int, 'bit_length'):
+    _int_bit_length = lambda i: i.bit_length()
+else:
+    _int_bit_length = lambda i: len(bin(abs(i))) - 2
+
 # ----------------------------------------------------------------------------
 
 
@@ -297,7 +303,7 @@ def summarize_address_range(first, last):
     last_int = last._ip
     while first_int <= last_int:
         nbits = min(_count_righthand_zero_bits(first_int, ip_bits),
-                    (last_int - first_int + 1).bit_length() - 1)
+                    _int_bit_length(last_int - first_int + 1) - 1)
         net = ip('%s/%d' % (first, ip_bits - nbits))
         yield net
         first_int += 1 << nbits

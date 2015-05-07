@@ -11,6 +11,11 @@ bytes = bytearray
 # Python 3.4 has assertRaisesRegex where Python 2.7 only has assertRaisesRegexp.
 # s/\.assertRaisesRegexp(/.assertRaisesRegexp(/
 
+# Python 2.6 carries assertRaisesRegexp and others in unittest2
+
+# Python 2.6 wants unicode into bytes.fromhex
+# s/bytes.fromhex\("/bytes.fromhex(u"/g
+
 # Further compatibility changes are marked "Compatibility", below.
 
 # ----------------------------------------------------------------------------
@@ -22,11 +27,15 @@ bytes = bytearray
 """Unittest for ipaddress module."""
 
 
-import unittest
 import re
 import contextlib
 import operator
 import ipaddress
+import sys
+if sys.version_info < (2, 7):
+    import unittest2 as unittest
+else:
+    import unittest
 
 class BaseTestCase(unittest.TestCase):
     # One big change in ipaddress over the original ipaddr module is
@@ -113,8 +122,8 @@ class CommonTestMixin_v4(CommonTestMixin):
         self.assertInstancesEqual(3232235521, "192.168.0.1")
 
     def test_packed(self):
-        self.assertInstancesEqual(bytes.fromhex("00000000"), "0.0.0.0")
-        self.assertInstancesEqual(bytes.fromhex("c0a80001"), "192.168.0.1")
+        self.assertInstancesEqual(bytes.fromhex(u"00000000"), "0.0.0.0")
+        self.assertInstancesEqual(bytes.fromhex(u"c0a80001"), "192.168.0.1")
 
     def test_negative_ints_rejected(self):
         msg = "-1 (< 0) is not permitted as an IPv4 address"
@@ -147,11 +156,11 @@ class CommonTestMixin_v6(CommonTestMixin):
         self.assertInstancesEqual(3232235521, "::c0a8:1")
 
     def test_packed(self):
-        addr = bytes(12) + bytes.fromhex("00000000")
+        addr = bytes(12) + bytes.fromhex(u"00000000")
         self.assertInstancesEqual(addr, "::")
-        addr = bytes(12) + bytes.fromhex("c0a80001")
+        addr = bytes(12) + bytes.fromhex(u"c0a80001")
         self.assertInstancesEqual(addr, "::c0a8:1")
-        addr = bytes.fromhex("c0a80001") + bytes(12)
+        addr = bytes.fromhex(u"c0a80001") + bytes(12)
         self.assertInstancesEqual(addr, "c0a8:1::")
 
     def test_negative_ints_rejected(self):
