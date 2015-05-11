@@ -9,8 +9,8 @@ from setuptools import setup
 
 setup(
     name='py2-ipaddress',
-    version='3.4',
-    description="Python 2.7 backport of 3.4's ipaddress module",
+    version='3.4.1',
+    description="Python 2.6 backport of 3.4's ipaddress module",
     maintainer='Søren Løvborg',
     maintainer_email='kwi@kwi.dk',
     url='https://bitbucket.org/kwi/py2-ipaddress/',
@@ -20,6 +20,7 @@ setup(
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Python Software Foundation License',
+        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Topic :: Internet',
         'Topic :: System :: Networking',

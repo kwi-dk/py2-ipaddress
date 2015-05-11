@@ -1,7 +1,7 @@
-``ipaddress`` backport for Python 2.7
-=====================================
+``ipaddress`` backport for Python 2.6 and 2.7
+=============================================
 
-This is a Python 2.7 backport of the Python 3.4 ``ipaddress`` module.
+This is a Python 2.6 backport of the Python 3.4 ``ipaddress`` module.
 
 Please refer to the `official Python 3.4 documentation`__ for more information
 on the module.
@@ -19,6 +19,12 @@ no caching is performed for the ``is_private`` and ``is_global``
 properties; this should be a minor problem as Python 3.3's ``ipaddress``
 did not use ``lru_cache`` either. The backport should behave identical
 to 3.4 in all other respects.
+
+
+Changes from py2-ipaddress 3.4
+------------------------------
+
+Python 2.6 support and a bugfix.
 
 
 Changes from py2-ipaddress 2.0.1 and earlier
@@ -65,7 +71,7 @@ License
 The ``ipaddress`` modules (both the original and this backport) are licensed
 under the `Python Software Foundation License version 2`__.
 
-The modifications made for Python 2.7 compatibility are hereby released into
-the public domain by the author.
+The modifications made for Python 2.6 compatibility are hereby released into
+the public domain by the authors.
 
 __ https://www.python.org/download/releases/3.4.0/license
