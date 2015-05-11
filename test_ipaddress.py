@@ -532,6 +532,12 @@ class InterfaceTestCase_v6(BaseTestCase, NetmaskTestMixin_v6):
 class NetworkTestCase_v6(BaseTestCase, NetmaskTestMixin_v6):
     factory = ipaddress.IPv6Network
 
+    def test_long_iter(self):
+        try:
+            list(ipaddress.IPv6Network('fd00::/126').hosts())
+        except OverflowError:
+            self.fail('py2-ipaddress issue #3')
+
 
 class FactoryFunctionErrors(BaseTestCase):
 
