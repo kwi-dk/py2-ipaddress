@@ -51,6 +51,7 @@ def _int_from_bytes(what, byteorder, signed=False):
 
 # Python 2.6 has no int.bit_length()
 if hasattr(int, 'bit_length'):
+    # Not `int.bit_length`, since it must also work for `long`.
     _int_bit_length = lambda i: i.bit_length()
 else:
     _int_bit_length = lambda i: len(bin(abs(i))) - 2
