@@ -20,6 +20,14 @@ properties; this should be a minor problem as Python 3.3's ``ipaddress``
 did not use ``lru_cache`` either. The backport should behave identical
 to 3.4 in all other respects.
 
+If you prefer semantics closer to Python 3, you may be interested in
+Philipp Hagemeister's `ipaddress backport`__, which uses ``str`` for
+the "packed" address representation, but then requires all textual IP
+addresses to be given as ``unicode`` strings. That backport also
+supports Python 3.0–3.2.
+
+__ https://github.com/phihag/ipaddress/
+
 
 Changes from py2-ipaddress 3.4
 ------------------------------
