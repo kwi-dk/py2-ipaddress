@@ -3,18 +3,31 @@
 # List of compatibility changes:
 
 # This backport uses bytearray instead of bytes, as bytes is the same
-# as str in Python 2.7.
-bytes = bytearray
+# as str in Python 2.7. The unit tests only use the bytes constructor
+# and the bytes.fromhex static method, so wrap those for compatibility.
+
+def bytes(*args, **kwargs):
+    return bytearray(*args, **kwargs)
+
+# Python 2.6 wants unicode into bytes.fromhex
+def bytes_fromhex(text):
+    return bytearray.fromhex(unicode(text))
+
+bytes.fromhex = bytes_fromhex
+
 # s/\(b'[^']\+'\)/bytearray(\1)/g
 # plus manual fixes for implicit string concatenation.
 
-# Python 3.4 has assertRaisesRegex where Python 2.7 only has assertRaisesRegexp.
-# s/\.assertRaisesRegexp(/.assertRaisesRegexp(/
-
 # Python 2.6 carries assertRaisesRegexp and others in unittest2
+import sys
+if sys.version_info < (2, 7):
+    import unittest2 as unittest
+    sys.modules['unittest'] = unittest
+else:
+    import unittest
 
-# Python 2.6 wants unicode into bytes.fromhex
-# s/bytes.fromhex\("/bytes.fromhex(u"/g
+# Python 3.4 has assertRaisesRegex where Python 2.7 only has assertRaisesRegexp.
+unittest.TestCase.assertRaisesRegex = unittest.TestCase.assertRaisesRegexp
 
 # Further compatibility changes are marked "Compatibility", below.
 
@@ -27,15 +40,11 @@ bytes = bytearray
 """Unittest for ipaddress module."""
 
 
+import unittest
 import re
 import contextlib
 import operator
 import ipaddress
-import sys
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
 
 class BaseTestCase(unittest.TestCase):
     # One big change in ipaddress over the original ipaddr module is
@@ -69,12 +78,11 @@ class BaseTestCase(unittest.TestCase):
         """
         if args:
             details = details % args
-        cm = self.assertRaisesRegexp(exc_type, details)
+        cm = self.assertRaisesRegex(exc_type, details)
         with cm as exc:
             yield exc
-
+        # Ensure we produce clean tracebacks on failure
         # Compatibility: Python 2.7 does not support exception chaining
-        ## Ensure we produce clean tracebacks on failure
         #if exc.exception.__context__ is not None:
         #    self.assertTrue(exc.exception.__suppress_context__)
 
@@ -91,7 +99,6 @@ class BaseTestCase(unittest.TestCase):
     def assertInstancesEqual(self, lhs, rhs):
         """Check constructor arguments produce equivalent instances"""
         self.assertEqual(self.factory(lhs), self.factory(rhs))
-
 
 class CommonTestMixin:
 
@@ -122,8 +129,8 @@ class CommonTestMixin_v4(CommonTestMixin):
         self.assertInstancesEqual(3232235521, "192.168.0.1")
 
     def test_packed(self):
-        self.assertInstancesEqual(bytes.fromhex(u"00000000"), "0.0.0.0")
-        self.assertInstancesEqual(bytes.fromhex(u"c0a80001"), "192.168.0.1")
+        self.assertInstancesEqual(bytes.fromhex("00000000"), "0.0.0.0")
+        self.assertInstancesEqual(bytes.fromhex("c0a80001"), "192.168.0.1")
 
     def test_negative_ints_rejected(self):
         msg = "-1 (< 0) is not permitted as an IPv4 address"
@@ -156,11 +163,11 @@ class CommonTestMixin_v6(CommonTestMixin):
         self.assertInstancesEqual(3232235521, "::c0a8:1")
 
     def test_packed(self):
-        addr = bytes(12) + bytes.fromhex(u"00000000")
+        addr = bytes(12) + bytes.fromhex("00000000")
         self.assertInstancesEqual(addr, "::")
-        addr = bytes(12) + bytes.fromhex(u"c0a80001")
+        addr = bytes(12) + bytes.fromhex("c0a80001")
         self.assertInstancesEqual(addr, "::c0a8:1")
-        addr = bytes.fromhex(u"c0a80001") + bytes(12)
+        addr = bytes.fromhex("c0a80001") + bytes(12)
         self.assertInstancesEqual(addr, "c0a8:1::")
 
     def test_negative_ints_rejected(self):
@@ -532,6 +539,7 @@ class InterfaceTestCase_v6(BaseTestCase, NetmaskTestMixin_v6):
 class NetworkTestCase_v6(BaseTestCase, NetmaskTestMixin_v6):
     factory = ipaddress.IPv6Network
 
+    # Compatibility: py2-ipaddress test case
     def test_long_iter(self):
         try:
             list(ipaddress.IPv6Network('fd00::/126').hosts())
@@ -695,21 +703,21 @@ class IpaddrUnitTest(unittest.TestCase):
         class Broken(ipaddress._BaseAddress):
             pass
         broken = Broken('127.0.0.1')
-        with self.assertRaisesRegexp(NotImplementedError, "Broken.*version"):
+        with self.assertRaisesRegex(NotImplementedError, "Broken.*version"):
             broken.version
 
     def testMissingNetworkVersion(self):
         class Broken(ipaddress._BaseNetwork):
             pass
         broken = Broken('127.0.0.1')
-        with self.assertRaisesRegexp(NotImplementedError, "Broken.*version"):
+        with self.assertRaisesRegex(NotImplementedError, "Broken.*version"):
             broken.version
 
     def testMissingAddressClass(self):
         class Broken(ipaddress._BaseNetwork):
             pass
         broken = Broken('127.0.0.1')
-        with self.assertRaisesRegexp(NotImplementedError, "Broken.*address"):
+        with self.assertRaisesRegex(NotImplementedError, "Broken.*address"):
             broken._address_class
 
     def testGetNetwork(self):
