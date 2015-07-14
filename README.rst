@@ -9,16 +9,25 @@ on the module.
 __ http://docs.python.org/3.4/library/ipaddress
 
 
-Changes from Python 3.4's ``ipaddress`` module
-----------------------------------------------
+Differences from Python 3.4's ``ipaddress`` module
+--------------------------------------------------
+
+The backport should behave identically to 3.4, except as noted here.
+
+
+``bytearray`` instead of ``bytes``
+..................................
 
 Since Python 2 has no distinct ``bytes`` type, ``bytearray`` is used
-instead for the "packed" address representation. Additionally, since
-Python 2.7's ``functools`` does not have Python 3.2's ``lru_cache``,
-no caching is performed for the ``is_private`` and ``is_global``
-properties; this should be a minor problem as Python 3.3's ``ipaddress``
-did not use ``lru_cache`` either. The backport should behave identical
-to 3.4 in all other respects.
+instead for the "packed" (binary) address representation::
+
+    >>> ipaddress.ip_address(bytearray('\xc0\xa8\x54\x17'))
+    IPv4Address('192.168.84.23')
+    >>> ipaddress.ip_address('127.0.0.17').packed
+    bytearray(b'\x7f\x00\x00\x11')
+
+This means py2-ipaddress can accept both Python 2 string types (``str``
+and ``unicode``) for the textual address representation.
 
 If you prefer semantics closer to Python 3, you may be interested in
 Philipp Hagemeister's `ipaddress backport`__, which uses ``str`` for
@@ -29,18 +38,30 @@ supports Python 3.0–3.2.
 __ https://github.com/phihag/ipaddress/
 
 
-Changes from py2-ipaddress 3.4
-------------------------------
+Caching of ``is_private`` and ``is_global``
+...........................................
+
+Since Python 2.7's ``functools`` module does not have Python 3.2's
+``lru_cache``, no caching is performed for the ``is_private`` and
+``is_global`` properties; this should be a minor problem as Python 3.3's
+``ipaddress`` did not use ``lru_cache`` either.
+
+
+Changelog
+---------
+
+py2-ipaddress 3.4.1
+...................
 
 Python 2.6 support and a bugfix.
 
 
-Changes from py2-ipaddress 2.0.1 and earlier
---------------------------------------------
+py2-ipaddress 3.4
+.................
 
 Since Python 2 does not distinguish between ``bytes`` and ``str`` like
 Python 3 does, version 2.0.1 and earlier of py2-ipaddress attempted to
-interpret ``str`` arguments as  _both_ and do the "right" thing.
+interpret ``str`` arguments as *both* and do the "right" thing.
 
 This unfortunately led to surprising behavior in py2-ipaddress::
 
