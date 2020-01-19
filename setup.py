@@ -13,7 +13,7 @@ setup(
     description="Python 2.6 backport of 3.4's ipaddress module",
     maintainer='Søren Løvborg',
     maintainer_email='kwi@kwi.dk',
-    url='https://bitbucket.org/kwi/py2-ipaddress/',
+    url='https://github.com/kwi-dk/py2-ipaddress',
     license='Python Software Foundation License version 2',
 
     classifiers=[
