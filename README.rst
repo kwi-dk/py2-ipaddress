@@ -50,6 +50,12 @@ Since Python 2.7's ``functools`` module does not have Python 3.2's
 Changelog
 ---------
 
+py2-ipaddress 3.4.2
+...................
+
+Test suite and documentation improvements.
+
+
 py2-ipaddress 3.4.1
 ...................
 
